@@ -18,12 +18,12 @@ class VisitorsStats:
 
     def _init_db(self):
         try:
-            self.db = mysql.connector.connect(self.db_config)
+            self.db = mysql.connector.connect(host=self.db_config["host"],
+                                              user=self.db_config["user"],
+                                              password=self.db_config["password"],
+                                              database=self.db_config["database"])
             self.db_cursor = self.db.cursor()
-
-            if not self._check_db_table():
-                self.db_cursor.execute(Constants.DB_TABLE_CREATE_SQL)
-
+            self.db_cursor.execute(Constants.DB_SQL_TABLE_CREATE)
             self.db_is_ok = True
         except DatabaseError as e:
             self.db_is_ok = False
@@ -36,21 +36,23 @@ class VisitorsStats:
             return Constants.API_RESULT_ERROR.format(error_message)
 
         try:
-            self.db_cursor.execute(Constants.DB_TABLE_INSERT_NEW_USER, user)
+            self.db_cursor.execute(Constants.DB_TABLE_INSERT_NEW_USER, (user["ip"], user["os"]))
             self.db.commit()
         except DatabaseError as e:
-            # TODO: add this? self.db_is_ok = False
-            print("DB insert error: " + e.message)
+            print("DB user insert error: " + e.message)
 
-    def get_users(self, page):
+    def get_users(self, page, limit, sort_field, sort_order):
         users = []
         try:
-
-            self.db_cursor.execute(Constants.DB_TABLE_SELECT_ALL_USERS)
+            current_page = Constants.DEFAULT_PAGE_NUMBER if int(page) < Constants.DEFAULT_PAGE_NUMBER else int(page)
+            current_limit = Constants.MAX_USERS_PER_PAGINATED_REQUEST if int(limit) <= 0 else int(limit)
+            self.db_cursor.execute(Constants.DB_TABLE_SELECT_PAGINATED_USERS.format(sort_field,
+                                                                                    sort_order,
+                                                                                    (current_page - 1) * current_limit,
+                                                                                    current_limit))
             result = self.db_cursor.fetchall()
             for row in result:
-                print(row)
-                # users.append(row)
+                users.append({"id": row[0], "ip": row[1], "os": row[2]})
         except DatabaseError as e:
-            print("DB insert error: " + e.message)
+            print("DB users select error: " + e.message)
         return users
