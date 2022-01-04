@@ -36,23 +36,39 @@ class VisitorsStats:
             return Constants.API_RESULT_ERROR.format(error_message)
 
         try:
-            self.db_cursor.execute(Constants.DB_TABLE_INSERT_NEW_USER, (user["ip"], user["os"]))
+            self.db_cursor.execute(Constants.DB_TABLE_INSERT_NEW_USER, 
+                                  (user.get("ip", ""), 
+                                   user.get("os", ""),
+                                   user.get("url", ""),
+                                   user.get("duration", -1),
+                                   user.get("lang", ""),
+                                   user.get("timezone", ""),
+                                   user.get("agent", ""),
+                                   user.get("resolution", "")))
             self.db.commit()
+            return Constants.API_RESULT_OK
         except DatabaseError as e:
             print("DB user insert error: " + e.message)
+            return Constants.API_RESULT_ERROR.format(e.message)
 
     def get_users(self, page, limit, sort_field, sort_order):
         users = []
         try:
             current_page = Constants.DEFAULT_PAGE_NUMBER if int(page) < Constants.DEFAULT_PAGE_NUMBER else int(page)
             current_limit = Constants.MAX_USERS_PER_PAGINATED_REQUEST if int(limit) <= 0 else int(limit)
+            # TODO: sort_field validation
+            # TODO: sort_order validation
             self.db_cursor.execute(Constants.DB_TABLE_SELECT_PAGINATED_USERS.format(sort_field,
                                                                                     sort_order,
                                                                                     (current_page - 1) * current_limit,
                                                                                     current_limit))
             result = self.db_cursor.fetchall()
+            assert (len(Constants.DB_TABLE_FIELDS) == len(result[0]))
             for row in result:
-                users.append({"id": row[0], "ip": row[1], "os": row[2]})
+                user = {}
+                for i, value in enumerate(row):
+                    user[Constants.DB_TABLE_FIELDS[i]] = row[i]
+                users.append(user)
         except DatabaseError as e:
             print("DB users select error: " + e.message)
         return users
