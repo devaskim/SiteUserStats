@@ -35,3 +35,7 @@ cd <PROJECT_DIR>
 flask run
 ```
 **Finally**, open [this page](http://127.0.0.1:5000/static/index.html) in the browser.
+
+## SCREENSHOTS
+![Visitors page](https://github.com/denisdenisi4/SiteUserStats/blob/main/images/visitors_table.png)
+![Visitor details page](https://github.com/denisdenisi4/SiteUserStats/blob/main/images/visitors_details.png)
