@@ -1,8 +1,7 @@
-import json
-
 import flask
 from flask import Flask
 from flask import request
+from flask import jsonify
 
 from visitors_stats.Constants import Constants
 from visitors_stats.VisitorsStats import VisitorsStats
@@ -14,9 +13,14 @@ stats = VisitorsStats({"host": "localhost",
                        "password": ""})
 
 
+@app.route(Constants.API_ENDPOINT_USER_IP, methods=["GET"])
+def get_user_ip():
+    return jsonify({'ip': request.remote_addr}), 200
+
+
 @app.route(Constants.API_ENDPOINT_NEW_USER, methods=["POST"])
 def add_user():
-    return stats.add_user(json.loads(request.data))
+    return jsonify(stats.add_user(request.data))
 
 
 @app.route(Constants.API_ENDPOINT_USERS, methods=["GET"])

@@ -3,10 +3,8 @@ import logging
 
 class Constants:
 
-    API_RESULT_OK = "{ 'result': 'ok' }"
-    API_RESULT_ERROR = "{ 'result': 'error', 'message': '%s' }"
-
     API_ENDPOINT_BASE = "/api/v1"
+    API_ENDPOINT_USER_IP = API_ENDPOINT_BASE + "/" + "ip"
     API_ENDPOINT_USERS = API_ENDPOINT_BASE + "/" + "users"
     API_ENDPOINT_NEW_USER = API_ENDPOINT_USERS + "/" + "new"
 
@@ -23,7 +21,6 @@ class Constants:
     LOGGER_NAME = "VisitorsStats"
 
     DB_TABLE_NAME = "visitors"
-
     DB_TABLE_FIELD_ID = "id"
     DB_TABLE_FIELD_IP = "ip"
     DB_TABLE_FIELD_OS = "os"
@@ -46,6 +43,8 @@ class Constants:
         DB_TABLE_FIELD_RESOLUTION
     ]
 
+    DB_SQL_DEFAULT_SORTING = "desc"
+
     DB_SQL_TABLE_EXISTS = "SELECT COUNT(*) " \
                           "FROM information_schema.tables " \
                           "WHERE table_name = '" + DB_TABLE_NAME + "'"
@@ -62,12 +61,15 @@ class Constants:
                           DB_TABLE_FIELD_RESOLUTION + " VARCHAR(16)" + \
                           ")"
 
-    DB_TABLE_INSERT_NEW_USER = "INSERT INTO " + DB_TABLE_NAME + " " \
-                               "(ip, os, url, duration, lang, timezone, agent, resolution)" + " " \
-                               "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    DB_TABLE_SELECT_ALL_USERS = "SELECT * FROM " + DB_TABLE_NAME
+    DB_SQL_INSERT_NEW_USER = "INSERT INTO " + DB_TABLE_NAME + " " \
+                             "(ip, os, url, duration, lang, timezone, agent, resolution)" + " " \
+                             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
-    DB_TABLE_SELECT_PAGINATED_USERS = "SELECT * " \
-                                      "FROM " + DB_TABLE_NAME + " " \
-                                      "ORDER BY {0} {1} " \
-                                      "LIMIT {2}, {3}"
+    DB_SQL_USERS_COUNT = "SELECT COUNT(*) FROM " + DB_TABLE_NAME
+
+    DB_SQL_SELECT_ALL_USERS = "SELECT * FROM " + DB_TABLE_NAME
+
+    DB_SQL_SELECT_PAGINATED_USERS = "SELECT * " \
+                                    "FROM " + DB_TABLE_NAME + " " \
+                                    "ORDER BY {0} {1} " \
+                                    "LIMIT {2}, {3}"

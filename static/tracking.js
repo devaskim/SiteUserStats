@@ -1,15 +1,26 @@
 const STATS_ENDPOINT = "http://127.0.0.1:5000/api/v1/users/new";
+const IP_ENDPOINT = "http://127.0.0.1:5000/api/v1/ip";
 const STORAGE_KEY = "__user_stats"
 
 function sendData(method, url, data, callback) {
-    let xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = callback;
-    xmlhttp.open(method, url, true);
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(callback) {
+        if (callback == null) {
+            return;
+        }
+        if (this.readyState === XMLHttpRequest.DONE) {
+            if (this.status === 200) {
+                callback(JSON.parse(this.responseText));
+            }
+        }
+    }.bind(xhr, callback);
+    xhr.open(method, url, true);
+
     if (data) {
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify(data));
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(data));
     } else {
-        xmlhttp.send();
+        xhr.send();
     }
 }
 
@@ -30,14 +41,19 @@ function initUserSessionData() {
 
 initUserSessionData();
 
-let userData = {};
-userData.ip = '';
-userData.url = window.location.hostname || window.location.host;
-userData.lang = navigator.language || navigator.userLanguage;
-userData.timezone = '' + (new Date().getTimezoneOffset());
-userData.os = window.navigator.oscpu;
-userData.agent = navigator.userAgent;
-userData.resolution = '' + window.screen.availWidth + 'x' + window.screen.availHeight;
+let userData = {
+    ip: "",
+    url: window.location.hostname || window.location.host,
+    lang: navigator.language || navigator.userLanguage,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    os: window.navigator.oscpu,
+    agent: navigator.userAgent,
+    resolution: '' + window.screen.availWidth + 'x' + window.screen.availHeight
+};
+
+sendData("GET", IP_ENDPOINT, null, function(data) {
+    userData.ip = data.ip;
+});
 
 window.addEventListener("beforeunload", function(e){
     let userSessionData = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -47,15 +63,7 @@ window.addEventListener("beforeunload", function(e){
     } else {
         userData.duration = Date.now() - userSessionData.in_ts;
         localStorage.removeItem(STORAGE_KEY);
-        // let callback = function() {
-            // if (stats.readyState == XMLHttpRequest.DONE) {
-               // if (stats.status == 200) {
-                   // localStorage.removeItem(STORAGE_KEY);
-                   // return;
-               // }
-            // }
-        // };
-        sendData("POST", STATS_ENDPOINT, userData, null);
+        sendData("POST", STATS_ENDPOINT, userData);
     }
     return null;
 }, false);
